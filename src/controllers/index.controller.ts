@@ -31,6 +31,7 @@ class IndexController implements IndexControllerInterface{
 
         try {
             const result = await accountModel.findOne({email: email})
+            console.log(result)
             if(!result) {
                 return res.send(JSON.stringify({status: 404, message: "Invalid account"}))
             }
