@@ -97,6 +97,10 @@ class IndexController implements IndexControllerInterface{
         const token = req.query.token;
         const clientId = req.query.id;
 
+        if(!token || !clientId){
+            return res.status(401).send({status: 401, message: "Missing infomation"})
+        }
+
         const clientResult = await verifyOauth2Token(clientId, token)
 
         if(!clientResult){
