@@ -12,12 +12,17 @@ const { OAuth2Client } = require('google-auth-library');
 function verifyOauthToken(clientId, token) {
     return __awaiter(this, void 0, void 0, function* () {
         let client = new OAuth2Client(clientId);
-        const ticket = yield client.verifyIdToken({
-            idToken: token,
-            audience: clientId,
-        });
-        const payload = ticket.getPayload();
-        return payload;
+        try {
+            const ticket = yield client.verifyIdToken({
+                idToken: token,
+                audience: clientId,
+            });
+            const payload = ticket.getPayload();
+            return payload;
+        }
+        catch (error) {
+            return error;
+        }
     });
 }
 module.exports = verifyOauthToken;

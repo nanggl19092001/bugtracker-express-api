@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 const logger = require('../utils/logger');
 const LogMess = require('../utils/logformat');
-const accountModel = require('../models/account.model');
+const account_model_1 = __importDefault(require("../models/account.model"));
 const regexEmail = require('../utils/constants');
 const bcrypt = require('bcrypt');
 const JwtMiddleware = require('../middleware/jwt');
@@ -24,11 +28,12 @@ class IndexController {
         return __awaiter(this, void 0, void 0, function* () {
             const email = req.body.email;
             const password = req.body.password;
+            account_model_1.default.findOne({ email: email });
             if (!email || !password) {
                 return res.send(JSON.stringify({ status: 500, message: "Missing infomation" }));
             }
             try {
-                const result = yield accountModel.findOne({ email: email });
+                const result = yield account_model_1.default.findOne({ email: email });
                 if (!result) {
                     return res.send(JSON.stringify({ status: 404, message: "Invalid account" }));
                 }
@@ -64,7 +69,7 @@ class IndexController {
             }
             try {
                 bcrypt.hash(password, 10).then((hashed) => __awaiter(this, void 0, void 0, function* () {
-                    const result = yield accountModel.create({
+                    const result = yield account_model_1.default.create({
                         email: email,
                         firstname: firstname,
                         lastname: lastname,
@@ -88,6 +93,9 @@ class IndexController {
         return __awaiter(this, void 0, void 0, function* () {
             const token = req.query.token;
             const clientId = req.query.id;
+            if (!token || !clientId) {
+                return res.status(401).send({ status: 401, message: "Missing infomation" });
+            }
             const clientResult = yield verifyOauth2Token(clientId, token);
             if (!clientResult) {
                 return res.send(JSON.stringify({ status: 400, message: "Cannot verify user" }));
@@ -96,11 +104,11 @@ class IndexController {
             const firstname = clientResult.given_name;
             const lastname = clientResult.family_name;
             try {
-                const result = yield accountModel.findOne({
+                const result = yield account_model_1.default.findOne({
                     email: email
                 });
                 if (!result) {
-                    accountModel.create({
+                    account_model_1.default.create({
                         email: email,
                         firstname: firstname,
                         lastname: lastname,

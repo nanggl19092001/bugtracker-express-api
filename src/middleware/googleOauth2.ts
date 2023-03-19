@@ -2,14 +2,18 @@ const {OAuth2Client} = require('google-auth-library');
 
 async function verifyOauthToken(clientId: Array<string> | string, token: string): Promise<any> {
     let client = new OAuth2Client(clientId)
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: clientId,
-    });
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: clientId,
+      });
+      
+      const payload = ticket.getPayload();
     
-  const payload = ticket.getPayload();
-
-  return payload;
+      return payload;
+    } catch (error) {
+      return error
+    }
 }
 
 module.exports = verifyOauthToken

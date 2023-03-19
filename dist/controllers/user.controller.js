@@ -290,6 +290,8 @@ class UserController {
     getTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const ticketId = req.query.id;
+            const offset = req.query.offset || 0;
+            const limit = req.query.limit || Infinity;
             if (!ticketId) {
                 return res.status(401).send(JSON.stringify({ status: 401, message: "Missing ticket id" }));
             }
@@ -537,7 +539,7 @@ class UserController {
                     receiveId: id
                 }).skip(offset).limit(limit);
                 if (comments.length == 0)
-                    return res.status(404).send(JSON.stringify({ status: 404, message: "id not exist or no comment had been created" }));
+                    return res.status(200).send(JSON.stringify({ status: 200, message: "id not exist or no comment had been created" }));
                 let data = [];
                 for (const comment of comments) {
                     let sender = yield account_model_1.default.findOne({ _id: comment.sender }, { password: 0 });
