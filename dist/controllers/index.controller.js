@@ -14,6 +14,7 @@ const accountModel = require('../models/account.model');
 const regexEmail = require('../utils/constants');
 const bcrypt = require('bcrypt');
 const JwtMiddleware = require('../middleware/jwt');
+const verifyOauth2Token = require('../middleware/googleOauth2');
 class IndexController {
     loginPage(req, res) {
         logger.info(LogMess('GET', req.route.path));
@@ -75,10 +76,64 @@ class IndexController {
                         .catch((e) => {
                         return res.send(JSON.stringify({ status: 500, message: e }));
                     });
+                    console.log(result);
                 }));
             }
             catch (e) {
                 return res.send(JSON.stringify({ status: 500, exception: e }));
+            }
+        });
+    }
+    checkSignUp(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const token = req.query.token;
+            const clientId = req.query.id;
+            const clientResult = yield verifyOauth2Token(clientId, token);
+            if (!clientResult) {
+                return res.send(JSON.stringify({ status: 400, message: "Cannot verify user" }));
+            }
+            const email = clientResult.email;
+            const firstname = clientResult.given_name;
+            const lastname = clientResult.family_name;
+            try {
+                const result = yield accountModel.findOne({
+                    email: email
+                });
+                if (!result) {
+                    accountModel.create({
+                        email: email,
+                        firstname: firstname,
+                        lastname: lastname,
+                        oauth: true
+                    }, (err, resAccount) => {
+                        if (err) {
+                            res.status(500).send(JSON.stringify({
+                                stats: 500, message: "Server error"
+                            }));
+                        }
+                        const data = {
+                            email: email,
+                            firstname: firstname,
+                            lastname: lastname,
+                            id: resAccount._id
+                        };
+                        const jwtAccessToken = JwtMiddleware.SignJWT(data);
+                        return res.status(200).send(JSON.stringify({ status: 200, access_token: jwtAccessToken }));
+                    });
+                }
+                else {
+                    const data = {
+                        email: result.email,
+                        firstname: result.firstname,
+                        lastname: result.lastname,
+                        id: result._id
+                    };
+                    const jwtAccessToken = JwtMiddleware.SignJWT(data);
+                    return res.send(JSON.stringify({ status: 200, userFound: true, access_token: jwtAccessToken }));
+                }
+            }
+            catch (error) {
+                return res.send(JSON.stringify({ status: 500, meessage: "Server error" }));
             }
         });
     }

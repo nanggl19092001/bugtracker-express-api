@@ -8,6 +8,7 @@ const accountSchema = new mongoose_1.default.Schema({
     email: { type: String, required: true, unique: true },
     firstname: String,
     lastname: String,
-    password: { type: String, required: true }
+    oauth: { type: Boolean, default: false },
+    password: { type: String, default: "" }
 });
-module.exports = mongoose_1.default.model('account', accountSchema);
+exports.default = mongoose_1.default.model('account', accountSchema);

@@ -12,4 +12,4 @@ const projectSchema = new mongoose.Schema({
     projectId: {type: mongoose.Types.ObjectId, required: true}
 })
 
-module.exports = mongoose.model<ProjectMemberModel>('project member', projectSchema)
+export default mongoose.model<ProjectMemberModel>('project member', projectSchema)

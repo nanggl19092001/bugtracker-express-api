@@ -8,6 +8,7 @@ const projectSchema = new mongoose_1.default.Schema({
     name: { type: String, required: true, unique: true },
     description: { type: String },
     end: { type: Date, required: true },
+    deleted: { type: Boolean, default: false },
     creator: { type: mongoose_1.default.Types.ObjectId, required: true }
 });
-module.exports = mongoose_1.default.model('project', projectSchema);
+exports.default = mongoose_1.default.model('project', projectSchema);

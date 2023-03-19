@@ -11,8 +11,10 @@ function route(app: Express) {
 
     app.post('/auth/signin', IndexController.signIn)
 
+    app.get('/auth/signin', IndexController.checkSignUp)
+    
     app.post('/auth/signup', IndexController.signUp)
-    app.get('/auth', )
+    
 
     app.get('/', (req: any,res: any) => {
         return res.render('home')

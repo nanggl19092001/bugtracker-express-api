@@ -5,10 +5,13 @@ const regexEmail = require('../utils/constants')
 const bcrypt = require('bcrypt')
 const JwtMiddleware = require('../middleware/jwt')
 
+const verifyOauth2Token = require('../middleware/googleOauth2')
+
 interface IndexControllerInterface {
     signIn(req: any, res: any): Promise<void>
     signUp(req: any, res: any): Promise<void>
-    auth(req: any, res: any): Promise<Express.Response>
+    checkSignUp(req: any, res: any): Promise<void>
+    auth(req: any, res: any): Promise<void>
 }
 
 class IndexController implements IndexControllerInterface{
@@ -80,6 +83,8 @@ class IndexController implements IndexControllerInterface{
                 .catch((e: any) => {
                     return res.send(JSON.stringify({status: 500, message: e}))
                 })
+
+                console.log(result)
             })
         }
         catch (e){
@@ -87,7 +92,67 @@ class IndexController implements IndexControllerInterface{
         }
     }
 
-    async auth(req: any, res: any): Promise<Express.Response>{
+    async checkSignUp(req: any, res: any): Promise<void> {
+
+        const token = req.query.token;
+        const clientId = req.query.id;
+
+        const clientResult = await verifyOauth2Token(clientId, token)
+
+        if(!clientResult){
+            return res.send(JSON.stringify({status: 400, message: "Cannot verify user"}))
+        }
+
+        const email = clientResult.email
+        const firstname = clientResult.given_name
+        const lastname = clientResult.family_name
+
+        try {
+            const result = await accountModel.findOne({
+                email: email
+            })
+
+            if(!result){
+
+                accountModel.create({
+                    email: email,
+                    firstname: firstname,
+                    lastname: lastname,
+                    oauth: true
+                }, (err: any, resAccount: any) => {
+
+                    if(err){
+                        res.status(500).send(JSON.stringify({
+                            stats: 500, message: "Server error"
+                        }))
+                    }
+
+                    const data = {
+                        email: email,
+                        firstname: firstname,
+                        lastname: lastname,
+                        id: resAccount._id
+                    }
+                    const jwtAccessToken = JwtMiddleware.SignJWT(data)
+                    return res.status(200).send(JSON.stringify({status: 200, access_token: jwtAccessToken}))
+                })
+            }
+            else{
+                const data = {
+                    email: result.email,
+                    firstname: result.firstname,
+                    lastname: result.lastname,
+                    id: result._id
+                }
+                const jwtAccessToken = JwtMiddleware.SignJWT(data)
+                return res.send(JSON.stringify({status: 200, userFound: true, access_token: jwtAccessToken}))
+            }
+        } catch (error) {
+            return res.send(JSON.stringify({status: 500, meessage: "Server error"}));
+        }
+    }
+
+    async auth(req: any, res: any): Promise<void>{
         return res
     }
 }

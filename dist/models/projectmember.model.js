@@ -8,4 +8,4 @@ const projectSchema = new mongoose_1.default.Schema({
     userId: { type: mongoose_1.default.Types.ObjectId, required: true },
     projectId: { type: mongoose_1.default.Types.ObjectId, required: true }
 });
-module.exports = mongoose_1.default.model('project member', projectSchema);
+exports.default = mongoose_1.default.model('project member', projectSchema);
