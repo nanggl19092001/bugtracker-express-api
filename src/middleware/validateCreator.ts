@@ -1,4 +1,4 @@
-const projectModel = require('../models/project.model')
+import projectModel from '../models/project.model'
 
 async function validateCre(userId: string, projectId: string): Promise<Boolean> {
 
